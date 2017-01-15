@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+# Will be overrided by other file...

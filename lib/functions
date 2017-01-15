@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+#############################################################
+# Generic functions
+#############################################################
+# Valeriy Soloviov <weldpua2008@gmail.com>
+#############################################################
+#   version 1.0.2 (20/8/16) <weldpua2008@gmail.com>
+#   - adding echo_success & echo_failure
+#############################################################
+
+
+function die()
+{
+    echo $@
+    exit 126
+}
+
+
+############### FORMAT FUNCTIONS ###################
+function echo_str(){   printf "\n%.60s" "$*"; }
+function echon_str(){   printf "\n%.60s\n" "$*"; }
+function echo_success() {  echo -n "[  OK  ]"; echo -ne "\n"; }
+function echo_failure() {  echo -n "[FAILED]"; echo -ne "\n"; exit 100; }
+
+function lstrip_to_width() {
+  local path="${1:-}"
+  local max_width=$(printf '%.d' ${2:-30} 2> /dev/null || echo 30)
+  if [ ${#path} -gt $max_width  ];then
+    local n=${#path}
+    local start_index=0
+    ((start_index=n-max_width))
+    echo "${path:$start_index:$max_width}"
+  else
+    echo "$path"
+  fi
+}
+############### FORMAT FUNCTIONS ################### 
+
+# checks if argument #1 is not empty 
+#   die with msg started from argument #2
+function die_on_empty_var()
+{
+    local var="${1:-}"
+    shift
+    if [ "x${var}" = "x" ];then 
+        die $@
+    fi
+}
+
+function lock()
+{
+    local fd=${200:-$LOCK_FD}
+
+    # create lock file
+    eval "exec $fd>$LOCKFILE"
+
+    # acquier the lock
+    flock -n $fd \
+        && return 0 \
+        || return 1
+}
+
+function lock_remove() {
+    rm -f $LOCKFILE
+}
+
+function logToFile()
+{
+    exec > $LOG_FILE
+    exec 2>&1
+}
+
+function discover()
+{
+    local file=$1
+    local __discover_prefix="${2:-}"    
+    local where="$PRODUCT_NAME/$MAJOR_RELEASE/$VERSION/$CUSTOM_MODIFICATION"
+    local split=$(echo $where | tr "/" " ")
+    local array=($split)
+    local arr_len=${#array[@]}
+
+    for (( i=${arr_len}; i>0; i-- )); do
+        local path=""
+        [[ "x${__discover_prefix}" != "x" ]]&&local path="${__discover_prefix}/"
+        for (( j=0; j<$i; j++ )); do
+            path+="${array[$j]}/"
+        done
+        
+        if [ -f "${path}${file}" ]; then
+            echo "${path}${file}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+function require_file()
+{
+    local file=$1
+    local path=$(discover "$file")
+    local exit_code=$?
+
+    set -e
+
+    if [[ -e "$path" ]]; then
+        . "$path"
+    else
+        local __discover_prefix=$(readlink -f "$RUN_DIR/../")
+        local path=$(discover "$file" "$__discover_prefix" )
+        if [[ -e "$path" ]]; then
+            . "$path"
+        else
+            echo "ERROR: Failed to load $path/$file"
+            exit 2
+        fi
+    fi
+}
