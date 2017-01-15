@@ -40,7 +40,7 @@ In our case, it's:
  - 2_build_step.sh
  - 3_build_step.sh
 
-Once we know our steps, the script will scan the application directory backwards starting from *ExampleProject/7/7.2.1/some_fix* and execute build steps related to the version you are trying to build.  
+Once we know our steps, the script will scan the application directory backwards starting from *ExampleProject/1/1.1.1/fix* and execute build steps related to the version you are trying to build.  
 
 As a result, *1_gether_artifacts.sh* will be taken from *ExampleProject/1/* directory, *2_build_step.sh* will be taken from *ExampleProject/1/1.1.1/fix1*.
 
