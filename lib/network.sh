@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 #############################################################
 # Sub functions to work with ip, network
@@ -17,5 +16,10 @@ valid_ipv4()
       stat=$?
    fi
    return $stat
+}
+
+nics_amount(){
+  local amount=$(find /sys/class/net/ -name "eth[0-9]"|wc -l)
+  echo $amount
 }
 

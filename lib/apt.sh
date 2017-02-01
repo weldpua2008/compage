@@ -22,3 +22,18 @@ function is_aptrepoexist(){
     return 127
     
 }
+
+
+function install_deb(){
+    set +e
+    local command="$1"
+    local installation_src="$2"    
+    which ${command} &>/dev/null
+    if [ $? -ne 0 ];then
+        ${SUDO} apt-get --no-install-recommends install -y ${installation_src}
+    fi
+    set -e
+
+}
+
+
