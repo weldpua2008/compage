@@ -58,3 +58,12 @@ function apt_addkey()
     fi
 
 }
+
+function print_uries_forceinstall()
+{
+    local PKGs=$1
+    local LINKS_FILE=$2
+   ${SUDO}  apt-get -d --print-uris -y install -f $PKGs  | ${SUDO} tee -a  $LINKS_FILE
+   [ ${PIPESTATUS[0]} -ne 0 ] && return 1
+   return 0
+}
