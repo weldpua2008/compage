@@ -57,3 +57,38 @@ function pip_install_fromgit()
     fi
     return $?
 }
+
+####################  Create venv  ###########################################################################
+#
+# 1).setup right PIP variable for ve
+#
+##############################################################################################################
+
+function create_ve(){
+    local PY_VERSION=${1:-2.7}
+    local VENV_PATH=${2:-/tmp/virtenv}
+     echo " ---- create ve ----- "
+    }
+    }
+    PIP=${VENV_PATH}/bin/pip-${PY_VERSION}
+    if ${SUDO} test  ! -x "${PIP}";then
+        echo "Can't find  ${PIP} in ve"
+        PIP=${VENV_PATH}/bin/pip${PY_VERSION}
+        if ${SUDO} test  ! -x "${PIP}";then
+            echo "Can't find  ${PIP} in ve"
+            exit 1
+        fi
+    fi
+
+    echo 'Creating "venv" environment...'
+    if [ -d ${VENV_PATH} ]; then
+        ${SUDO} rm -rf ${VENV_PATH}
+    fi
+
+    ${SUDO} mkdir -p ${VENV_PATH}
+
+    # Create virtualenv and install necessary packages
+    ${SUDO} virtualenv --no-site-packages --setuptools -p ${PATH_TO_PYTHON_BIN} ${VENV_PATH}
+    . ${VENV_PATH}/bin/activate
+     echo " ----  ----- "
+}
