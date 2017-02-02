@@ -7,7 +7,7 @@
 function is_aptrepoexist(){
     local REPO=${1:-}
     local DISTRIBUTION=${2:-}
-    
+    set -o pipefail || true
     if [ "x${REPO:-}" != "x"  ] && [ "x${DISTRIBUTION}" != "x" ];then
     	${SUDO} find /etc/apt/ -name "*.list" | xargs cat | grep  ^[[:space:]]*deb[[:space:]][^[:space:]]*${REPO}[^[:space:]]*[[:space:]]${DISTRIBUTION}[^[:space:]]*  &> /dev/null
         [ $? -eq 0 ] && return 0        
@@ -63,7 +63,20 @@ function print_uries_forceinstall()
 {
     local PKGs=$1
     local LINKS_FILE=$2
-   ${SUDO}  apt-get -d --print-uris -y install -f $PKGs  | ${SUDO} tee -a  $LINKS_FILE
-   [ ${PIPESTATUS[0]} -ne 0 ] && return 1
-   return 0
+    set -o pipefail || true
+    ${SUDO}  apt-get -d --print-uris -y install -f $PKGs  | ${SUDO} tee -a  $LINKS_FILE
+    [ ${PIPESTATUS[0]} -ne 0 ] && return 1
+    return 0
+}
+############################################################################################
+# print uries with dependencies
+############################################################################################
+function apt_printuries(){
+    local PKG="${1:-}"
+    shift 1   
+    set -o pipefail || true
+    local dependencies=$(apt-cache depends $PKG | grep \"  Depends:\" |  sed 's/  Depends://' | sed ':a;N;$!ba;s/\n//g')
+    $SUDO apt-get --print-uris --yes -d  --reinstall $@ install $PKG $dependencies | grep ^\' | cut -d\' -f2 || return 1
+    [ ${PIPESTATUS[0]} -ne 0 ] && return 2
+    return 0    
 }

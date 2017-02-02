@@ -39,4 +39,22 @@ lxc_name(){
 	return $?
 }
 
- 
+lxc_expose_port ()
+{
+	local PUBLIC_PORT=${1:-}
+	local PRIVATE_PORT=${2:-}
+#	echo Usage: $0 '<External TCP port> <Service TCP port> <Container name>'
+  $SUDO iptables -t nat -A PREROUTING -d ${PUBLIC_IP}  -p tcp  -m tcp --dport ${PUBLIC_PORT} -j DNAT --to ${PRIVATE_IP}:${PRIVATE_PORT} || return 1
+  $SUDO iptables -A FORWARD -d ${PRIVATE_IP} -i ${PRIVATE_INTERFACE}  -p tcp -m tcp --dport ${PRIVATE_PORT} -j ACCEPT || return 2
+# Already configured via interfaces
+#  iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+}
+
+lxc_privateip(){
+	local CONTAINER=${1:-}
+	[ "$CONTAINER" = "" ]&& return 1
+	PRIVATE_IP=$(lxc-ls -f -F ipv4 $CONTAINER 2> /dev/null|head -1 |tr -d ' ')
+	[[ ! $PRIVATE_IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] && return 2
+	echo $PRIVATE_IP
+	return 0
+}

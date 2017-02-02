@@ -66,12 +66,12 @@ function wget_url()
     local URL="$1"
     local OUTPUT="${2:-}"
     set -e
-    echo_str "  -> Downloading from URL: ${URL} ..."
+    echo_str "  -> Downloading from URL: ${URL} ..."    
     case $OUTPUT in 
         '' ) 
-            $SUDO wget "${URL}" &> /dev/null
+            $SUDO wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${URL}" &> /dev/null
             ;;
-        * ) $SUDO wget "${URL}" -O "$(_prepare_output_path "${2:-}")" &> /dev/null
+        * ) $SUDO wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${URL}" -O "$(_prepare_output_path "${2:-}")" &> /dev/null
             ;;
     esac
     echo_success
