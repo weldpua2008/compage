@@ -118,3 +118,13 @@ return 0
 
 }
 
+function filesystem_unmount_by_path {
+     local FS_TYPE=$1
+      local PREFIX_PATH=$2
+        for mounted in $(SUDO mount -t ${FS_TYPE} -l|cut -d " " -f3 |grep $PREFIX_PATH);do
+                $SUDO umount $mounted || return 1
+                    #echo "umount $mounted"
+        done
+       return 0
+}
+
