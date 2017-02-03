@@ -31,6 +31,12 @@ network_taps_amount(){
    echo $amount
 }
 
+network_isbridge(){
+    local brName=${1:-}
+    [ -d /sys/class/net/${brName} ] && return 0
+    return 1
+}
+
 # nics_ip(){
 #   $SUDO ip a li dev $PUBLIC_INTERFACE |grep "inet " |awk -F '[ /]+' '{print $3}'
 # }
@@ -51,7 +57,7 @@ network_add_bridge(){
     $SUDO brctl setfd  $INTERFACE 0 || return 2
     $SUDO brctl stp $INTERFACE off || return 3
 # iptables -A FORWARD -p all -i $INTERFACE -j ACCEPT
-    #ip link set $INTERFACE up
+    $SUDO ip link set $INTERFACE up || return 4
     
     return 0
 }
