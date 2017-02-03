@@ -101,3 +101,20 @@ function copy_path()
 	$SUDO cp $copy_params "${src_path}" "${dest_path}" && \
 	echo_success || echo_failure
 }
+
+# cleaning overlayfs lock file
+filesystem_overlayfs_clean(){
+    local MOUNTPOINT=${1:-/tmp}
+    $SUDO find $MOUNTPOINT -lname '(overlay-whiteout)' -exec rm -rf {} \; || return 1
+    return 0
+}
+
+filesystem_overlayfs_mount(){
+local MOUNTPOINT=${1:-/tmp/mp}
+local lowerdir=${2:-/tmp/ld}
+local upperdir=${3:-/tmp/up}
+$SUDO mount -t overlayfs -o rw,lowerdir=$lowerdir,upperdir=$upperdir overlayfs $MOUNTPOINT || return 1
+return 0
+
+}
+
