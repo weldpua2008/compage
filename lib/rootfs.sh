@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 #############################################################
-# Sub functions to work with files from BSP 
+# Sub functions to work with rootfs
 #############################################################
 # Valeriy Soloviov <weldpua2008@gmail.com>
-#############################################################
-#   version 1.0.3 (31/8/16) <weldpua2008@gmail.com>
-#	- fixing formatting 
 #############################################################
 
 if type die 2> /dev/null| grep -i function &> /dev/null; then
@@ -41,4 +38,24 @@ function rootfs_extract(){
 		;;
 	esac    
   	echo_success
+}
+
+
+function chroot_update_grub()
+{ 
+  local chroot=$1
+  local block_device=$2
+
+  $SUDO mount --bind /dev  $chroot/dev  || return 1
+  $SUDO mount --bind /proc $chroot/proc || return 1
+  $SUDO mount --bind /sys  $chroot/sys  || return 1
+  $SUDO chroot $chroot grub-install $block_device || return 2
+  $SUDO chroot $chroot update-initramfs -u -k $(uname -r)  &> /dev/null  || return 3
+  $SUDO chroot $chroot update-grub || return 4
+  $SUDO chroot $chroot ln -sf /boot/vmlinuz* /vmlinuz || return 5
+  $SUDO chroot $chroot ln -sf /boot/initrd.img* /initrd.img || return 5
+  $SUDO umount -l $chroot/{dev,proc,sys} &>/dev/null || true
+  $SUDO umount -l $chroot/{dev,proc,sys} &>/dev/null  || true
+
+  return 0
 }

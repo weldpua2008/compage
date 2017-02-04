@@ -21,15 +21,10 @@ function find_bleckdevice(){
       fi
   done
   # not found - return error
-  [ -z "$chosen_block_dev" ] && return $HDD_SPACE_ERROR
-  # prepare the chosen block device
-  _prepare_block_device $chosen_block_dev || return $HDD_PART_ERROR
-  # deploy rootfs
-  if [[ $MODE == "production" ]];then
-    _deploy_rootfs_persist $chosen_block_dev || return $DEPLOY_ROOTFS_ERROR
-  else
-    _deploy_rootfs $chosen_block_dev || return $DEPLOY_ROOTFS_ERROR
-  fi
+  [ -z "$chosen_block_dev" ] && return 1
+  echo "$chosen_block_dev"
+  return 0
+  
 }
 
 #---------------------------------------------------------------------------
