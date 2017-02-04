@@ -75,3 +75,53 @@ network_iface_by_indx()
 	local indx=${1:-2}
 	$SUDO ip link |awk -F: '/^'${indx:-2}':/{gsub(" ","") ;print $2}'
 }
+network_iface_ip(){
+	local iface=${1:-}
+	# ifconfig $iface 2>/dev/null | grep -Eo "inet (addr:)?([0-9]*\.){3}[0-9]*" | grep -Eo "([0-9]*\.){3}[0-9]*"
+
+}
+network_iface_mask(){
+	local iface=${1:-}
+	#ifconfig $iface 2>/dev/null | grep -Eo ' (Mask:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*'
+}
+network_iface_maddr(){
+	local iface=${1:-}
+	local name_space=${2:-}
+	[ "$name_space" ="" ] && \ 
+	$SUDO  ip address show $iface 2> /dev/null| grep -F \"link/ether\" | awk '{FS=\" \"; print $2}' || \
+	$SUDO ip netns exec $name_space ip address show $iface 2> /dev/null| grep -F \"link/ether\" | awk '{FS=\" \"; print $2}'
+}
+#first_dns=`cat /etc/resolv.conf | grep -i nameserver | grep -Eo '([0-9]*\.){3}[0-9]*' | head -1`
+#second_dns=`cat /etc/resolv.conf | grep -i nameserver | grep -Eo '([0-9]*\.){3}[0-9]*' | head -2 | tail -1`
+#search_pfx=`cat /etc/resolv.conf  | grep search | awk '{print $NF}'`
+
+
+# All nics 
+#ip -d -o link list 2> /dev/null|grep -e "[0-9]: "|awk -F " " '{print $2}'|sed "s/://g"
+
+#  Bridges have those folders
+# "/sys/class/net/%s/master" or "/sys/class/net/%s/brport" or "/sys/class/net/%s/bridge"
+# TUN and TAP devices have a /sys/class/net/tap0/tun_flags file
+
+# Macvtap
+# ip -d -o link show  $iface| grep '@'
+# ip -d -o link show $iface|sed 's/^[^>]*>//'|grep -w macvtap
+
+# Dummy
+# ip -d -o link show $iface|sed 's/^[^>]*>//'|grep -w dummy 
+
+network_linkstate(){
+	local iface=${1:-}
+	local name_space=${2:-} 
+	[ "$name_space" ="" ] && \
+		$SUDO ip link show $iface 2> /dev/null|grep -e \"[0-9]: \"  | awk '{FS=\" \"; print $9}' || \
+		$SUDO ip netns exec $name_space ip link show $iface 2> /dev/null|grep -e \"[0-9]: \"  | awk '{FS=\" \"; print $9}'
+}
+network_prepare_ns(){
+	local pid=${1:-$$}
+	$SUDO rm -f /var/run/netns/$pid || return 1
+	$SUDO mkdir -p /var/run/netns/ || return 2
+	$SUDO ln -s /proc/$pid/ns/net /var/run/netns/$pid || return 3
+	return 0
+
+}

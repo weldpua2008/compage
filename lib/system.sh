@@ -35,3 +35,15 @@ processes_total(){
 	echo $processes
 }
 
+# Regenerate ssh keys if not-exist into SystemD 
+# ExecStartPre=-/bin/bash -c '[[ ! -f /etc/ssh/ssh_host_rsa_key || ! -f /etc/ssh/ssh_host_dsa_key || ! -f /etc/ssh/ssh_host_ecdsa_key || ! -f /etc/ssh/ssh_host_ed25519_key ]] && dpkg-reconfigure -f noninteractive  openssh-server'
+
+# get selected timezone
+function get_timezone()
+{
+    # debian workaround to find current timezone
+    local tz=$(diff -s /etc/localtime /usr/share/zoneinfo/`cat /etc/timezone 2>/dev/null || echo 'Asia/Jerusalem'`)
+    [[ "$tz" =~ ^Files[[:space:]]/etc/localtime[[:space:]]and[[:space:]]/usr/share/zoneinfo/(.*)[[:space:]]are.* ]]
+    echo ${BASH_REMATCH[1]}
+}
+

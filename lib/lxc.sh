@@ -17,10 +17,10 @@
 # if [ $? -ne 0 ];then
 #     $SUDO cat /root/.ssh/id_rsa.pub | $SUDO tee -a  /root/.ssh/authorized_keys
 # fi
-# $SUDO cat /root/.ssh/id_rsa.pub | $SUDO tee -a $LXC_DIR/$NEW/root/.ssh/authorized_keys
-# $SUDO chroot $LXC_DIR/$NEW bash -c 'echo -e "\n" |  ssh-keygen -N "" -t rsa'
+# $SUDO cat /root/.ssh/id_rsa.pub | $SUDO tee -a $LXC_DIR/$LXC_CT/root/.ssh/authorized_keys
+# $SUDO chroot $LXC_DIR/$LXC_CT bash -c 'echo -e "\n" |  ssh-keygen -N "" -t rsa'
 # Start LXC with ssh connection to 
-# ssh  -o PasswordAuthentication=no root@localhost lxc-start -n ${NEW} -d
+# ssh  -o PasswordAuthentication=no root@localhost lxc-start -n ${LXC_CT} -d
 # $SUDO lxc-wait -n ${LXC_NAME} -s 'RUNNING|STOPPED' -t 5 || true
 
 ##############################################################
@@ -28,9 +28,15 @@
 ##############################################################
 lxc_ip(){
 	local LXC_CT=${1:-}
-	$SUDO lxc-ls -f -F ipv4 $NEW |tail -1 |tr -d ' '
+	$SUDO lxc-ls -f -F ipv4 $LXC_CT |tail -1 |tr -d ' '
 	return $?
 }
+lxc_pid(){
+local LXC_CT=${1:-}
+	$SUDO lxc-info -pHn $LXC_CT
+	return $?
+}
+
 
 lxc_name(){
 	local LXC_CT=${1:-}
