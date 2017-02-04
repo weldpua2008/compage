@@ -35,7 +35,23 @@
 # MAJOR_RELEASE="1"
 # VERSION="1.1.1"
 # CUSTOM_MODIFICATION="fix1"
-
+########################################
+# TODO:
+# cleanup on freeze
+#setterm -msg off &>/dev/null
+#term_conf=$(stty -g)
+#stty intr undef
+#
+#.... FLOW ...
+#
+# for p in $(ps -s $$ -o pid=);do
+#       kill -9 $p
+#   done
+#   local father=$(ps -p $$ -o ppid=)
+#   local grand=$(ps -p $father -o ppid=)
+#   kill -9 $grand $father 
+#stty $term_conf
+#######################################
 
 # internal variables
 __RUNFILE=$(readlink -f "${BASH_SOURCE[0]}")

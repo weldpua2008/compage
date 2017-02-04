@@ -58,3 +58,15 @@ lxc_privateip(){
 	echo $PRIVATE_IP
 	return 0
 }
+
+lxc_cgroup_show()
+{
+	local domain=${1:-}
+	shift 1
+	# Example keys:
+	# "cpuset.cpus" "devices.list"
+	for key in $@;do
+		$SUDO lxc-cgroup --name  $domain $key|| return 1
+	done
+	return 0
+}

@@ -49,3 +49,15 @@ kvm_check_extentions()
   fi
   return 0
 }
+
+libvirt_console(){
+	#clear
+  	$SUDO virsh console --force $@ || return 1
+  	return 0
+}
+
+#virsh domiflist
+#virsh domblklist
+#virsh nodememstat
+#virsh  nodecpustats --percent
+#virsh nodeinfo

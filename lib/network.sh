@@ -21,6 +21,14 @@ valid_ipv4()
    return $stat
 }
 
+valid_mask()
+{
+  local mask=$1
+  grep -E -q '^(254|252|248|240|224|192|128)\.0\.0\.0|255\.(254|252|248|240|224|192|128|0)\.0\.0|255\.255\.(254|252|248|240|224|192|128|0)\.0|255\.255\.255\.(254|252|248|240|224|192|128|0)' <<< "$mask"
+  return $?
+}
+
+
 network_nics_amount(){
   local amount=$($SUDO find /sys/class/net/ -name "eth[0-9]" 2> /dev/null|wc -l)
   echo $amount
@@ -62,4 +70,8 @@ network_add_bridge(){
     return 0
 }
 
-
+network_iface_by_indx()
+{
+	local indx=${1:-2}
+	$SUDO ip link |awk -F: '/^'${indx:-2}':/{gsub(" ","") ;print $2}'
+}
