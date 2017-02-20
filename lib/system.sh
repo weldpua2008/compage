@@ -63,3 +63,8 @@ function get_timezone()
 #    done 
 # done
 # set -a
+# printenv 
+# xterm -e bash --noprofile --norc
+# declare -p 
+# If you're only interested in environment variables, use
+# declare -xp
