@@ -47,3 +47,19 @@ function get_timezone()
     echo ${BASH_REMATCH[1]}
 }
 
+# How to list all variables names and their current values
+# http://askubuntu.com/questions/275965/how-to-list-all-variables-names-and-their-current-values
+# To show a list including the "shell variables" you can enter the next command:
+# ( set -o posix ; set ) | less
+# compgen -v
+#
+# This must print all shell variables names. You can get a list before and after sourcing your file just like with "set" to diff which variables are new (as explained in the other answers). But keep in mind such filtering with diff can filter out some variables that you need but were present before sourcing your file
+# for i in _ {a..z} {A..Z}; do eval "echo \${!$i@}" ; done | xargs printf "%s\n"
+# pure BASH solution (no external commands used):
+# for i in _ {a..z} {A..Z}; do
+#    for var in `eval echo "\\${!$i@}"`; do
+#       echo $var
+#       # you can test if $var matches some criteria and put it in the file or ignore
+#    done 
+# done
+# set -a
