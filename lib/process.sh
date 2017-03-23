@@ -20,4 +20,14 @@ process_get_dispay(){
     return 0
 }
 
-
+process_getredis_data(){
+  # display listen port's
+  # $SUDO ps -Af 2> /dev/null|grep redis| awk  '$NF ~ /:/ {split($NF,port,":");print port[2]}'
+  n=2
+  # display host
+  # $SUDO ps -Af 2> /dev/null|grep redis| awk  '$NF ~ /:/ {split($NF,port,":");print port[1]}'
+  #n=1
+  
+  $SUDO ps -Af 2> /dev/null|grep redis| awk  '$NF ~ /:/ {split($NF,port,":");print port['$n']}'|sort|uniq
+  
+}
