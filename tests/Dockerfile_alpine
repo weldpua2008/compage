@@ -1,0 +1,5 @@
+FROM alpine:3.4
+MAINTAINER Valeriy Solovyov <weldpua2008@gmail.com>
+RUN apk add --update curl git 
+
+ENTRYPOINT ["/bi/sh"]
