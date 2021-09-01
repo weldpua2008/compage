@@ -123,5 +123,59 @@ network_prepare_ns(){
 	$SUDO mkdir -p /var/run/netns/ || return 2
 	$SUDO ln -s /proc/$pid/ns/net /var/run/netns/$pid || return 3
 	return 0
+}
+########################################################################################
+#  HostMin:   10.207.108.1
+#  HostMax:   10.207.111.254
+#	network_address_to_ips 10.207.108.0/22 | while read -r h;do
+#	  new_h="ip-$(echo $h|tr '.' '-').bi-use1.wixprod.net"
+#	  echo "${new_h} ${h}"
+#	done
+########################################################################################
+network_address_to_ips() {
+  # create array containing network address and subnet
+  local network=(${1//\// })
+  # split network address by dot
+  local iparr=(${network[0]//./ })
+  # if no mask given it's the same as /32
+  local mask=32
+  [[ $((${#network[@]})) -gt 1 ]] && mask=${network[1]}
 
+  # convert dot-notation subnet mask or convert CIDR to an array like (255 255 255 0)
+  local maskarr
+  if [[ ${mask} =~ '.' ]]; then  # already mask format like 255.255.255.0
+    maskarr=(${mask//./ })
+  else                           # assume CIDR like /24, convert to mask
+    if [[ $((mask)) -lt 8 ]]; then
+      maskarr=($((256-2**(8-mask))) 0 0 0)
+    elif  [[ $((mask)) -lt 16 ]]; then
+      maskarr=(255 $((256-2**(16-mask))) 0 0)
+    elif  [[ $((mask)) -lt 24 ]]; then
+      maskarr=(255 255 $((256-2**(24-mask))) 0)
+    elif [[ $((mask)) -lt 32 ]]; then
+      maskarr=(255 255 255 $((256-2**(32-mask))))
+    elif [[ ${mask} == 32 ]]; then
+      maskarr=(255 255 255 255)
+    fi
+  fi
+
+  # correct wrong subnet masks (e.g. 240.192.255.0 to 255.255.255.0)
+  [[ ${maskarr[2]} == 255 ]] && maskarr[1]=255
+  [[ ${maskarr[1]} == 255 ]] && maskarr[0]=255
+
+  # generate list of ip addresses
+  local bytes=(0 0 0 0)
+  for i in $(seq 0 $((255-maskarr[0]))); do
+    bytes[0]="$(( i+(iparr[0] & maskarr[0]) ))"
+    for j in $(seq 0 $((255-maskarr[1]))); do
+      bytes[1]="$(( j+(iparr[1] & maskarr[1]) ))"
+      for k in $(seq 0 $((255-maskarr[2]))); do
+        bytes[2]="$(( k+(iparr[2] & maskarr[2]) ))"
+        for l in $(seq 1 $((255-maskarr[3]))); do
+          bytes[3]="$(( l+(iparr[3] & maskarr[3]) ))"
+          printf "%d.%d.%d.%d\n" "${bytes[@]}"
+        done
+      done
+    done
+  done
 }
